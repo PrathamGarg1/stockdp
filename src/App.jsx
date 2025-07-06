@@ -4,7 +4,19 @@ import { Play, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 const algorithms = {
   'Best Time to Buy and Sell Stock': {
     id: 'stock1',
-    description: 'Single transaction with mintillnow tracking',
+    description: 'Single transaction - Time: O(n), Space: O(1)',
+    cppCode: `int maxProfit(vector<int>& prices) {
+    int mintillnow = prices[0];
+    int ans = 0;
+    
+    for(int i = 1; i < prices.size(); i++) {
+        if(prices[i] > mintillnow) 
+            ans = max(ans, prices[i] - mintillnow);
+        else 
+            mintillnow = prices[i];
+    }
+    return ans;
+}`,
     inputs: [
       {
         name: 'prices',
@@ -25,9 +37,8 @@ const algorithms = {
       steps.push({
         i: 0,
         price: arr[0],
-        arrays: { mintillnow, ans },
-        explanation: `i=0, arr[0]=${arr[0]}, Initialize`,
-        logic: 'int mintillnow=arr[0]; int ans=0;'
+        mintillnow,
+        ans
       });
       
       for (let i = 1; i < n; i++) {
@@ -40,11 +51,8 @@ const algorithms = {
         steps.push({
           i,
           price: arr[i],
-          arrays: { mintillnow, ans },
-          explanation: `i=${i}, arr[i]=${arr[i]}`,
-          logic: arr[i] > mintillnow ? 
-            'if(arr[i]>mintillnow) ans=max(ans,arr[i]-mintillnow);' : 
-            'else mintillnow=arr[i];'
+          mintillnow,
+          ans
         });
       }
       
@@ -54,7 +62,22 @@ const algorithms = {
   
   'Best Time to Buy and Sell Stock II': {
     id: 'stock2',
-    description: 'Unlimited transactions with curr[2] and after[2] arrays',
+    description: 'Unlimited transactions - Time: O(n), Space: O(1)',
+    cppCode: `int maxProfit(vector<int>& prices) {
+    int n = prices.size();
+    vector<int> curr(2, 0), after(2, 0);
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int canbuy = 0; canbuy < 2; canbuy++) {
+            if(canbuy) 
+                curr[canbuy] = max(-prices[i] + after[0], after[1]);
+            else 
+                curr[canbuy] = max(prices[i] + after[1], after[0]);
+        }
+        after = curr;
+    }
+    return curr[1];
+}`,
     inputs: [
       {
         name: 'prices',
@@ -69,13 +92,10 @@ const algorithms = {
       if (n <= 1) return { maxProfit: 0, steps: [] };
       
       const steps = [];
-      let curr = [0, 0]; // [canbuy=0, canbuy=1]
+      let curr = [0, 0];
       let after = [0, 0];
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldCurr = [...curr];
-        const oldAfter = [...after];
-        
         for (let canbuy = 0; canbuy < 2; canbuy++) {
           if (canbuy) {
             curr[canbuy] = Math.max(-arr[i] + after[0], after[1]);
@@ -87,12 +107,8 @@ const algorithms = {
         steps.push({
           i,
           price: arr[i],
-          arrays: {
-            curr: [...curr],
-            after: [...oldAfter]
-          },
-          explanation: `i=${i}, price=${arr[i]}`,
-          logic: 'if(canbuy) curr[canbuy]=max(-arr[i]+after[0],after[1]); else curr[canbuy]=max(arr[i]+after[1],after[0]);'
+          curr: [...curr],
+          after: [...after]
         });
         
         after = [...curr];
@@ -104,7 +120,26 @@ const algorithms = {
   
   'Best Time to Buy and Sell Stock III': {
     id: 'stock3',
-    description: 'At most 2 transactions with curr[2][3] and after[2][3] arrays',
+    description: 'At most 2 transactions - Time: O(n), Space: O(1)',
+    cppCode: `int maxProfit(vector<int>& prices) {
+    int n = prices.size();
+    int k = 2;
+    vector<vector<int>> curr(2, vector<int>(k+1, 0));
+    vector<vector<int>> after(2, vector<int>(k+1, 0));
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int canbuy = 0; canbuy < 2; canbuy++) {
+            for(int t = 1; t <= k; t++) {
+                if(canbuy) 
+                    curr[canbuy][t] = max(-prices[i] + after[0][t], after[1][t]);
+                else 
+                    curr[canbuy][t] = max(prices[i] + after[1][t-1], after[0][t]);
+            }
+        }
+        after = curr;
+    }
+    return curr[1][k];
+}`,
     inputs: [
       {
         name: 'prices',
@@ -118,26 +153,18 @@ const algorithms = {
       const n = arr.length;
       if (n <= 1) return { maxProfit: 0, steps: [] };
       
-      const k = 2; // exactly 2 transactions
+      const k = 2;
       const steps = [];
       let curr = Array(2).fill(0).map(() => Array(k + 1).fill(0));
       let after = Array(2).fill(0).map(() => Array(k + 1).fill(0));
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldAfter = after.map(row => [...row]);
-        
         for (let canbuy = 0; canbuy < 2; canbuy++) {
-          for (let transactionsleft = 1; transactionsleft <= k; transactionsleft++) {
+          for (let t = 1; t <= k; t++) {
             if (canbuy) {
-              curr[canbuy][transactionsleft] = Math.max(
-                -arr[i] + after[0][transactionsleft],
-                after[1][transactionsleft]
-              );
+              curr[canbuy][t] = Math.max(-arr[i] + after[0][t], after[1][t]);
             } else {
-              curr[canbuy][transactionsleft] = Math.max(
-                arr[i] + after[1][transactionsleft - 1],
-                after[0][transactionsleft]
-              );
+              curr[canbuy][t] = Math.max(arr[i] + after[1][t - 1], after[0][t]);
             }
           }
         }
@@ -145,12 +172,8 @@ const algorithms = {
         steps.push({
           i,
           price: arr[i],
-          arrays: {
-            curr: curr.map(row => [...row]),
-            after: oldAfter
-          },
-          explanation: `i=${i}, price=${arr[i]}, k=2 transactions`,
-          logic: 'if(canbuy) curr[canbuy][t]=max(-arr[i]+after[0][t],after[1][t]); else curr[canbuy][t]=max(arr[i]+after[1][t-1],after[0][t]);'
+          curr: curr.map(row => [...row]),
+          after: after.map(row => [...row])
         });
         
         after = curr.map(row => [...row]);
@@ -162,7 +185,25 @@ const algorithms = {
   
   'Best Time to Buy and Sell Stock IV': {
     id: 'stock4',
-    description: 'At most k transactions with curr[2][k+1] and after[2][k+1] arrays',
+    description: 'At most k transactions - Time: O(n*k), Space: O(k)',
+    cppCode: `int maxProfit(int k, vector<int>& prices) {
+    int n = prices.size();
+    vector<vector<int>> curr(2, vector<int>(k+1, 0));
+    vector<vector<int>> after(2, vector<int>(k+1, 0));
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int canbuy = 0; canbuy < 2; canbuy++) {
+            for(int t = 1; t <= k; t++) {
+                if(canbuy) 
+                    curr[canbuy][t] = max(-prices[i] + after[0][t], after[1][t]);
+                else 
+                    curr[canbuy][t] = max(prices[i] + after[1][t-1], after[0][t]);
+            }
+        }
+        after = curr;
+    }
+    return curr[1][k];
+}`,
     inputs: [
       {
         name: 'k',
@@ -188,20 +229,12 @@ const algorithms = {
       let after = Array(2).fill(0).map(() => Array(k + 1).fill(0));
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldAfter = after.map(row => [...row]);
-        
         for (let canbuy = 0; canbuy < 2; canbuy++) {
-          for (let transactionsleft = 1; transactionsleft <= k; transactionsleft++) {
+          for (let t = 1; t <= k; t++) {
             if (canbuy) {
-              curr[canbuy][transactionsleft] = Math.max(
-                -arr[i] + after[0][transactionsleft],
-                after[1][transactionsleft]
-              );
+              curr[canbuy][t] = Math.max(-arr[i] + after[0][t], after[1][t]);
             } else {
-              curr[canbuy][transactionsleft] = Math.max(
-                arr[i] + after[1][transactionsleft - 1],
-                after[0][transactionsleft]
-              );
+              curr[canbuy][t] = Math.max(arr[i] + after[1][t - 1], after[0][t]);
             }
           }
         }
@@ -210,15 +243,11 @@ const algorithms = {
           i,
           price: arr[i],
           k,
-          arrays: {
-            curr: curr.map(row => [...row]),
-            after: oldAfter
-          },
-          explanation: `i=${i}, price=${arr[i]}, k=${k} transactions`,
-          logic: 'if(canbuy) curr[canbuy][t]=max(-arr[i]+after[0][t],after[1][t]); else curr[canbuy][t]=max(arr[i]+after[1][t-1],after[0][t]);'
+          curr: curr.map(row => [...row]),
+          after: after.map(row => [...row])
         });
         
-        after = curr.map(row => [...row]); // after=curr;
+        after = curr.map(row => [...row]);
       }
       
       return { maxProfit: curr[1][k], steps };
@@ -227,7 +256,23 @@ const algorithms = {
   
   'Best Time to Buy and Sell Stock with Cooldown': {
     id: 'cooldown',
-    description: 'With cooldown using curr[2], after[2], and moreafter[2] arrays',
+    description: 'With cooldown - Time: O(n), Space: O(1)',
+    cppCode: `int maxProfit(vector<int>& prices) {
+    int n = prices.size();
+    vector<int> curr(2, 0), after(2, 0), moreafter(2, 0);
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int canbuy = 0; canbuy < 2; canbuy++) {
+            if(canbuy) 
+                curr[canbuy] = max(-prices[i] + after[0], after[1]);
+            else 
+                curr[canbuy] = max(prices[i] + moreafter[1], after[0]);
+        }
+        moreafter = after;
+        after = curr;
+    }
+    return curr[1];
+}`,
     inputs: [
       {
         name: 'prices',
@@ -247,9 +292,6 @@ const algorithms = {
       let moreafter = [0, 0];
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldAfter = [...after];
-        const oldMoreafter = [...moreafter];
-        
         for (let canbuy = 0; canbuy < 2; canbuy++) {
           if (canbuy) {
             curr[canbuy] = Math.max(-arr[i] + after[0], after[1]);
@@ -261,13 +303,9 @@ const algorithms = {
         steps.push({
           i,
           price: arr[i],
-          arrays: {
-            curr: [...curr],
-            after: [...oldAfter],
-            moreafter: [...oldMoreafter]
-          },
-          explanation: `i=${i}, arr[i]=${arr[i]}`,
-          logic: 'if(canbuy) curr[canbuy]=max(-arr[i]+after[0],after[1]); else curr[canbuy]=max(arr[i]+moreafter[1],after[0]);'
+          curr: [...curr],
+          after: [...after],
+          moreafter: [...moreafter]
         });
         
         moreafter = [...after];
@@ -280,7 +318,22 @@ const algorithms = {
   
   'Best Time to Buy and Sell Stock with Transaction Fee': {
     id: 'fee',
-    description: 'With transaction fee using curr[2] and after[2] arrays',
+    description: 'With transaction fee - Time: O(n), Space: O(1)',
+    cppCode: `int maxProfit(vector<int>& prices, int fee) {
+    int n = prices.size();
+    vector<int> curr(2, 0), after(2, 0);
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int canbuy = 0; canbuy < 2; canbuy++) {
+            if(canbuy) 
+                curr[canbuy] = max(-prices[i] + after[0], after[1]);
+            else 
+                curr[canbuy] = max(prices[i] - fee + after[1], after[0]);
+        }
+        after = curr;
+    }
+    return curr[1];
+}`,
     inputs: [
       {
         name: 'prices',
@@ -306,8 +359,6 @@ const algorithms = {
       let after = [0, 0];
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldAfter = [...after];
-        
         for (let canbuy = 0; canbuy < 2; canbuy++) {
           if (canbuy) {
             curr[canbuy] = Math.max(-arr[i] + after[0], after[1]);
@@ -320,15 +371,11 @@ const algorithms = {
           i,
           price: arr[i],
           fee,
-          arrays: {
-            curr: [...curr],
-            after: [...oldAfter]
-          },
-          explanation: `i=${i}, price=${arr[i]}, fee=${fee}`,
-          logic: 'if(canbuy) curr[canbuy]=max(-arr[i]+after[0],after[1]); else curr[canbuy]=max(arr[i]-fee+after[1],after[0]);'
+          curr: [...curr],
+          after: [...after]
         });
         
-        after = [...curr]; // after=curr;
+        after = [...curr];
       }
       
       return { maxProfit: curr[1], steps };
@@ -337,7 +384,31 @@ const algorithms = {
 
   'Best Time to Buy and Sell Stock V': {
     id: 'three_state',
-    description: '3-state DP with curr[3][k+1] and after[3][k+1] arrays',
+    description: '3-state DP - Time: O(n*k), Space: O(k)',
+    cppCode: `int maxProfit(int k, vector<int>& prices) {
+    int n = prices.size();
+    vector<vector<int>> curr(3, vector<int>(k+1, 0));
+    vector<vector<int>> after(3, vector<int>(k+1, 0));
+    
+    for(int t = 0; t <= k; t++) {
+        after[1][t] = after[2][t] = -1e9;
+    }
+    
+    for(int i = n-1; i >= 0; i--) {
+        for(int state = 0; state <= 2; state++) {
+            for(int t = 1; t <= k; t++) {
+                if(state == 0) 
+                    curr[state][t] = max({after[0][t], prices[i] + after[1][t], -prices[i] + after[2][t]});
+                else if(state == 1) 
+                    curr[state][t] = max(after[1][t], -prices[i] + after[0][t-1]);
+                else 
+                    curr[state][t] = max(after[2][t], prices[i] + after[0][t-1]);
+            }
+        }
+        after = curr;
+    }
+    return curr[0][k];
+}`,
     inputs: [
       {
         name: 'k',
@@ -362,31 +433,29 @@ const algorithms = {
       let curr = Array(3).fill(0).map(() => Array(k + 1).fill(0));
       let after = Array(3).fill(0).map(() => Array(k + 1).fill(0));
       
-      for (let transactionsleft = 0; transactionsleft <= k; transactionsleft++) {
-        after[1][transactionsleft] = -1e9;
-        after[2][transactionsleft] = -1e9;
+      for (let t = 0; t <= k; t++) {
+        after[1][t] = -1e9;
+        after[2][t] = -1e9;
       }
       
       for (let i = n - 1; i >= 0; i--) {
-        const oldAfter = after.map(row => [...row]);
-        
         for (let state = 0; state <= 2; state++) {
-          for (let transactionsleft = 1; transactionsleft <= k; transactionsleft++) {
+          for (let t = 1; t <= k; t++) {
             if (state === 0) {
-              curr[state][transactionsleft] = Math.max(
-                after[0][transactionsleft],
-                arr[i] + after[1][transactionsleft],
-                -arr[i] + after[2][transactionsleft]
+              curr[state][t] = Math.max(
+                after[0][t],
+                arr[i] + after[1][t],
+                -arr[i] + after[2][t]
               );
             } else if (state === 1) {
-              curr[state][transactionsleft] = Math.max(
-                after[1][transactionsleft],
-                -arr[i] + after[0][transactionsleft - 1]
+              curr[state][t] = Math.max(
+                after[1][t],
+                -arr[i] + after[0][t - 1]
               );
             } else {
-              curr[state][transactionsleft] = Math.max(
-                after[2][transactionsleft],
-                arr[i] + after[0][transactionsleft - 1]
+              curr[state][t] = Math.max(
+                after[2][t],
+                arr[i] + after[0][t - 1]
               );
             }
           }
@@ -396,15 +465,11 @@ const algorithms = {
           i,
           price: arr[i],
           k,
-          arrays: {
-            curr: curr.map(row => [...row]),
-            after: oldAfter
-          },
-          explanation: `i=${i}, arr[i]=${arr[i]}, 3-state DP`,
-          logic: 'if(state==0) max({after[0][t],arr[i]+after[1][t],-arr[i]+after[2][t]}); else if(state==1) max(after[1][t],-arr[i]+after[0][t-1]); else max(after[2][t],arr[i]+after[0][t-1]);'
+          curr: curr.map(row => [...row]),
+          after: after.map(row => [...row])
         });
         
-        after = curr.map(row => [...row]); // after=curr;
+        after = curr.map(row => [...row]);
       }
       
       return { maxProfit: curr[0][k], steps };
@@ -417,7 +482,6 @@ function App() {
   const [inputValues, setInputValues] = useState({});
   const [result, setResult] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const algorithm = algorithms[selectedAlgorithm];
 
@@ -463,7 +527,6 @@ function App() {
       const result = algorithm.solve(...inputs);
       setResult(result);
       setCurrentStep(0);
-      setIsPlaying(false);
     } catch (error) {
       console.error('Algorithm execution error:', error);
       alert('Error running algorithm: ' + error.message);
@@ -473,7 +536,6 @@ function App() {
   const reset = () => {
     setResult(null);
     setCurrentStep(0);
-    setIsPlaying(false);
   };
 
   const nextStep = () => {
@@ -486,20 +548,6 @@ function App() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const play = () => {
-    setIsPlaying(true);
-    const interval = setInterval(() => {
-      setCurrentStep(prev => {
-        if (prev >= result.steps.length - 1) {
-          setIsPlaying(false);
-          clearInterval(interval);
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 1000);
   };
 
   const currentStepData = result?.steps[currentStep];
@@ -519,13 +567,19 @@ function App() {
               setResult(null);
               setInputValues({});
             }}
-            className="w-full p-3 border border-gray-300 rounded-md"
+            className="w-full p-3 border border-gray-300 rounded-md mb-4"
           >
             {Object.keys(algorithms).map(name => (
               <option key={name} value={name}>{name}</option>
             ))}
           </select>
-          <p className="mt-2 text-gray-600">{algorithm.description}</p>
+          <p className="text-gray-600 mb-4">{algorithm.description}</p>
+          
+          {/* C++ Code Display */}
+          <div className="bg-gray-100 p-4 rounded-md">
+            <h3 className="font-semibold mb-2">C++ Code:</h3>
+            <pre className="text-xs font-mono overflow-x-auto">{algorithm.cppCode}</pre>
+          </div>
         </div>
 
         {/* Input Section */}
@@ -573,7 +627,7 @@ function App() {
 
             {/* Step Controls */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Step-by-Step Visualization</h2>
+              <h2 className="text-xl font-semibold mb-4">Step Navigation</h2>
               <div className="flex items-center gap-4 mb-4">
                 <button
                   onClick={prevStep}
@@ -582,14 +636,6 @@ function App() {
                 >
                   <ChevronLeft size={16} />
                   Previous
-                </button>
-                <button
-                  onClick={isPlaying ? () => setIsPlaying(false) : play}
-                  disabled={currentStep >= result.steps.length - 1}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Play size={16} />
-                  {isPlaying ? 'Pause' : 'Play'}
                 </button>
                 <button
                   onClick={nextStep}
@@ -605,79 +651,74 @@ function App() {
               </div>
             </div>
 
-            {/* SIMPLE ARRAYS VISUALIZATION - Only how numbers change */}
+            {/* Arrays Visualization */}
             {currentStepData && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Arrays State - How Numbers Change</h2>
+                <h2 className="text-xl font-semibold mb-4">Current Step: i={currentStepData.i}, price={currentStepData.price}</h2>
                 
-                <div className="mb-4 p-3 bg-gray-100 rounded">
-                  <div className="font-mono text-sm">{currentStepData.explanation}</div>
-                  {currentStepData.logic && <div className="font-mono text-xs text-blue-600 mt-1">{currentStepData.logic}</div>}
-                </div>
-
-                {/* Stock I - mintillnow, ans */}
-                {selectedAlgorithm === 'Best Time to Buy and Sell Stock' && currentStepData.arrays && (
+                {/* Stock I */}
+                {selectedAlgorithm === 'Best Time to Buy and Sell Stock' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-3 bg-blue-100 rounded">
                       <div className="text-sm font-bold">mintillnow</div>
-                      <div className="text-3xl font-mono">{currentStepData.arrays.mintillnow}</div>
+                      <div className="text-2xl font-mono">{currentStepData.mintillnow}</div>
                     </div>
                     <div className="p-3 bg-green-100 rounded">
                       <div className="text-sm font-bold">ans</div>
-                      <div className="text-3xl font-mono">{currentStepData.arrays.ans}</div>
+                      <div className="text-2xl font-mono">{currentStepData.ans}</div>
                     </div>
                   </div>
                 )}
 
-                {/* Stock II, Fee - curr[2], after[2] */}
-                {(selectedAlgorithm.includes('Stock II') || selectedAlgorithm.includes('Fee')) && currentStepData.arrays && (
+                {/* Stock II, Fee */}
+                {(selectedAlgorithm.includes('Stock II') || selectedAlgorithm.includes('Fee')) && (
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       <span className="font-bold text-sm">curr:</span>
-                      {currentStepData.arrays.curr.map((val, idx) => (
+                      {currentStepData.curr.map((val, idx) => (
                         <div key={idx} className="bg-purple-200 px-3 py-2 rounded font-mono">[{idx}]: {val}</div>
                       ))}
                     </div>
                     <div className="flex gap-2">
                       <span className="font-bold text-sm">after:</span>
-                      {currentStepData.arrays.after.map((val, idx) => (
+                      {currentStepData.after.map((val, idx) => (
                         <div key={idx} className="bg-purple-100 px-3 py-2 rounded font-mono">[{idx}]: {val}</div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Cooldown - curr[2], after[2], moreafter[2] */}
-                {selectedAlgorithm.includes('Cooldown') && currentStepData.arrays && (
+                {/* Cooldown */}
+                {selectedAlgorithm.includes('Cooldown') && (
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       <span className="font-bold text-sm">curr:</span>
-                      {currentStepData.arrays.curr.map((val, idx) => (
+                      {currentStepData.curr.map((val, idx) => (
                         <div key={idx} className="bg-purple-200 px-3 py-2 rounded font-mono">[{idx}]: {val}</div>
                       ))}
                     </div>
                     <div className="flex gap-2">
                       <span className="font-bold text-sm">after:</span>
-                      {currentStepData.arrays.after.map((val, idx) => (
+                      {currentStepData.after.map((val, idx) => (
                         <div key={idx} className="bg-purple-100 px-3 py-2 rounded font-mono">[{idx}]: {val}</div>
                       ))}
                     </div>
                     <div className="flex gap-2">
                       <span className="font-bold text-sm">moreafter:</span>
-                      {currentStepData.arrays.moreafter.map((val, idx) => (
+                      {currentStepData.moreafter.map((val, idx) => (
                         <div key={idx} className="bg-yellow-100 px-3 py-2 rounded font-mono">[{idx}]: {val}</div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Stock III, IV, V - 2D arrays curr[rows][cols], after[rows][cols] */}
-                {(selectedAlgorithm.includes('Stock III') || selectedAlgorithm.includes('Stock IV') || selectedAlgorithm.includes('Stock V')) && currentStepData.arrays && (
+                {/* Stock III, IV, V - 2D arrays */}
+                {(selectedAlgorithm.includes('Stock III') || selectedAlgorithm.includes('Stock IV') || selectedAlgorithm.includes('Stock V')) && (
                   <div className="space-y-4">
                     <div>
                       <div className="font-bold text-sm mb-2">curr array:</div>
                       <div className="space-y-1">
-                        {currentStepData.arrays.curr.map((row, rowIdx) => (
+                        {currentStepData.curr.map((row, rowIdx) => (
                           <div key={rowIdx} className="flex gap-1">
                             <span className="font-mono text-xs">[{rowIdx}]:</span>
                             {row.map((val, colIdx) => (
@@ -693,7 +734,7 @@ function App() {
                     <div>
                       <div className="font-bold text-sm mb-2">after array:</div>
                       <div className="space-y-1">
-                        {currentStepData.arrays.after.map((row, rowIdx) => (
+                        {currentStepData.after.map((row, rowIdx) => (
                           <div key={rowIdx} className="flex gap-1">
                             <span className="font-mono text-xs">[{rowIdx}]:</span>
                             {row.map((val, colIdx) => (
@@ -707,19 +748,6 @@ function App() {
                     </div>
                   </div>
                 )}
-
-                {/* Show the result for this step */}
-                <div className="mt-4 p-2 bg-yellow-50 rounded">
-                  <span className="font-bold text-sm">
-                    {selectedAlgorithm === 'Best Time to Buy and Sell Stock' && `Result so far: ${currentStepData.arrays?.ans || 0}`}
-                    {selectedAlgorithm.includes('Stock II') && `Current profit: curr[1] = ${currentStepData.arrays?.curr[1] || 0}`}
-                    {selectedAlgorithm.includes('Stock III') && `Current profit: curr[1][2] = ${currentStepData.arrays?.curr[1]?.[2] || 0}`}
-                    {selectedAlgorithm.includes('Stock IV') && `Current profit: curr[1][k] = ${currentStepData.arrays?.curr[1]?.[currentStepData.k] || 0}`}
-                    {selectedAlgorithm.includes('Cooldown') && `Current profit: curr[1] = ${currentStepData.arrays?.curr[1] || 0}`}
-                    {selectedAlgorithm.includes('Fee') && `Current profit: curr[1] = ${currentStepData.arrays?.curr[1] || 0}`}
-                    {selectedAlgorithm.includes('Stock V') && `Current profit: curr[0][k] = ${currentStepData.arrays?.curr[0]?.[currentStepData.k] || 0}`}
-                  </span>
-                </div>
               </div>
             )}
 
