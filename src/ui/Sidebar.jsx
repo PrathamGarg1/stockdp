@@ -3,7 +3,7 @@ import { PATTERNS, cn } from "./patterns"
 const TYPES = { stocks: "Stocks", jumps: "Jumps", stones: "Stones" }
 
 // All problems, grouped by type (the start of the id). The dot is the pattern it uses.
-export function Sidebar({ problems, id }) {
+export function Sidebar({ problems, id, onPick }) {
   return (
     <aside className="h-full w-72 shrink-0 overflow-auto border-r bg-slate-50 p-4">
       <h1 className="text-lg font-bold">Stocks, Jumps & Stones</h1>
@@ -12,15 +12,15 @@ export function Sidebar({ problems, id }) {
         <div key={type} className="mb-4">
           <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{name}</div>
           {problems.filter((p) => p.id.startsWith(type)).map((p) => (
-            <a
+            <button
               key={p.id}
-              href={`#${p.id}`}
+              onClick={() => onPick(p)}
               title={PATTERNS[p.pattern].name}
-              className={cn("flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white", p.id === id && "bg-white font-medium shadow-sm ring-1 ring-violet-300")}
+              className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-white", p.id === id && "bg-white font-medium shadow-sm ring-1 ring-violet-300")}
             >
               <span className={cn("h-2 w-2 shrink-0 rounded-full", PATTERNS[p.pattern].dot)} />
               {p.title}
-            </a>
+            </button>
           ))}
         </div>
       ))}
