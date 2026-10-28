@@ -8,10 +8,12 @@ import { Sidebar, Header, InputForm, Code, Bars, Tree, Variables, Controls } fro
 //   { line, depth, fn, args, vars, mem, ret? }  = "what the program looked like at that line"
 // This page shows frames[step]. Type a different input and the trace is recorded again.
 const solutions = import.meta.glob("./solutions/*.js", { query: "?raw", import: "default" }) // loaded when opened
+const cppFiles = import.meta.glob("./solutions/*.cpp", { query: "?raw", import: "default" }) // your original C++, for "View C++"
 
 export default function App() {
   const [id, setId] = useState(location.hash.slice(1))
   const [source, setSource] = useState(null) // the solution's code
+  const [cpp, setCpp] = useState("") // the same solution in C++
   const [input, setInput] = useState(null) // what it runs on
   const [step, setStep] = useState(Number(new URLSearchParams(location.search).get("step")) || 0)
 
@@ -27,6 +29,7 @@ export default function App() {
     setSource(null)
     setInput(problem.example)
     solutions[`./solutions/${problem.id}.js`]().then(setSource)
+    cppFiles[`./solutions/${problem.id}.cpp`]().then(setCpp)
   }, [problem])
 
   const params = useMemo(() => (source ? signature(source).params : []), [source])
@@ -53,7 +56,7 @@ export default function App() {
             {frame && (
               <>
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <Code code={source} line={frame.line} />
+                  <Code code={source} cpp={cpp} line={frame.line} />
                   <div className="min-w-0 space-y-3">
                     <Bars frames={frames} frame={frame} />
                     <Tree frames={frames} step={step} />
