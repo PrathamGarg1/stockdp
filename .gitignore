@@ -4,4 +4,3 @@ dist
 *.local
 .npm-cache
 *.tsbuildinfo
-__pycache__

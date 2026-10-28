@@ -1,9 +1,7 @@
-import tailwindcssAnimate from "tailwindcss-animate"
-
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       fontFamily: {
@@ -52,5 +50,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [],
 }

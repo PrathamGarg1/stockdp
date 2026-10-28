@@ -1,39 +1,33 @@
 # Stocks & Stones
 
-A visualizer for my LeetCode solutions in `mysolutions/*.txt`, grouped by pattern.
-**The C++ is never rewritten.** Each solution is compiled as written and run under a debugger;
-the page replays what the debugger saw, line by line.
+A step-by-step visualizer for my LeetCode solutions, grouped by pattern. Type your own input and it re-runs.
 
 ```
-mysolutions/*.txt ──scripts/trace.py──► src/traces/<id>.json ──► React UI
- (my C++, untouched)   compile + lldb       code + one frame        replays it
-                                            per executed line
+src/solutions/<id>.js ──► src/trace.js ──► frames ──► src/App.jsx ──► src/ui/
+ my solution (JS)          runs it and      one per     shows          all the
+                           records it       statement   frames[step]   drawing
 ```
 
-## Use it
+## Run
 
 ```bash
 npm install
-npm run dev        # the visualizer
-npm test           # every trace must return the expected answer
-npm run trace      # re-run the C++ (needs clang++ and lldb); pass ids to redo a few: npm run trace -- jumps-4
+npm run dev     # the visualizer
+npm test        # every solution must return the expected answer on its example
 ```
 
-Traces are committed, so `npm run dev` works without lldb.
+## Read in this order
 
-## Where things are
+1. `src/solutions/stocks-1.js`: a solution. It is my C++ from `mysolutions/`, ported line for line
+   (`let` for `int`, `Math.max` for `max`, `this.` for class members, `grid([n+1,3,2],-1)` for `int dp[..][..][..]` + `memset`).
+2. `src/trace.js`: the core. `instrument()` puts a `__s(line, ...)` call before every statement,
+   then the code runs for real and each call records a frame: `{ line, depth, fn, args, vars, mem, ret }`.
+3. `src/App.jsx`: loads a solution, runs it on the input, and shows `frames[step]`.
+4. `src/ui/`: Code, Bars, Tree, Variables, Controls, InputForm. Drawing only; no logic about the problems.
 
-| file | what it does |
-| --- | --- |
-| `src/problems.json` | one line per solution: which file/chunk, pattern, example input, expected answer |
-| `src/patterns.ts` | the 6 patterns: how to spot them and the rule |
-| `scripts/trace.py` | splits the txt files, builds a tiny `main` per solution, compiles, runs lldb |
-| `scripts/lldb_tracer.py` | runs inside lldb: steps line by line and records variables, `this->` members, returns |
-| `src/trace.ts` | trace types, recursion tree (from call depth), pointer chips |
-| `src/views.tsx` | draws any value (cell / row / grid / pair), bars, tree |
-| `src/App.tsx` | sidebar by pattern, code panel, player |
+`src/problems.json` lists the problems (title, pattern, default input, expected answer).
+`mysolutions/*.txt` is the original C++, kept for reference.
 
-## Adding a solution
+## Add a solution
 
-Paste the class into a `mysolutions/*.txt` file, add a line to `src/problems.json`, run `npm run trace`.
-Nothing else: the UI draws whatever variables the debugger reports.
+Port the class to `src/solutions/<id>.js` (the last method is the one that runs), add a line to `src/problems.json`, run `npm test`.

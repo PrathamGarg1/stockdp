@@ -1,1 +1,0 @@
-{"cpp":"class Solution {\npublic:\n    bool stoneGame(vector<int>& piles) {\n        return 1;\n    }\n};","result":"true","frames":[{"line":4,"depth":0,"fn":"stoneGame","vars":{"piles":[5,3,4,5]},"args":["piles"],"mem":{}}]}
