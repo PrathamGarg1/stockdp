@@ -1,18 +1,21 @@
-class Solution {
+import { grid } from "./grid.js"
 
-    dp;
+export default function solve(n) {
+  const steps = []
+  let dp = grid([n + 1], -1)
 
-    rec(n){
-        if(n==0) return 0;
-        if(this.dp[n]!=-1) return this.dp[n];
-        let ans=false;
-        for(let f=1;f*f<=n;f++){
-            if(!this.rec(n-f*f)) ans=true;
-        }
-        return this.dp[n]=ans;
+  // can the player to move win with n stones left?
+  function rec(n) {
+    if (n == 0) return false
+    if (dp[n] != -1) return dp[n]
+    let ans = false
+    for (let f = 1; f * f <= n; f++) {
+      if (!rec(n - f * f)) ans = true
     }
-    winnerSquareGame(n) {
-        this.dp=grid([n+1],-1);
-        return this.rec(n);
-    }
+    dp[n] = ans
+    steps.push(structuredClone({ n, ans, dp }))
+    return ans
+  }
+
+  return { answer: rec(n), steps }
 }

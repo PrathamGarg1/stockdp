@@ -7,7 +7,7 @@ export function Sidebar({ problems, id, onPick }) {
   return (
     <aside className="h-full w-72 shrink-0 overflow-auto border-r bg-slate-50 p-4">
       <h1 className="text-lg font-bold">Stocks, Jumps & Stones</h1>
-      <p className="mb-4 text-xs text-muted-foreground">Your solutions, run line by line. Type your own input.</p>
+      <p className="mb-4 text-xs text-muted-foreground">Your solutions, step by step. Type your own input.</p>
       {Object.entries(TYPES).map(([type, name]) => (
         <div key={type} className="mb-4">
           <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{name}</div>

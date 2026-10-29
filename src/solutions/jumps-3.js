@@ -1,23 +1,20 @@
-class Solution {
-    vis;
-    n;
-    ans=false;
-    dfs(i,arr){
-        if(i<0 || i>=this.n) return;
-        if(this.vis[i]) return;
-        this.vis[i]=1;
-        if(arr[i]==0){
-            this.ans=true;
-            return;
-        }
-        this.dfs(i-arr[i],arr);
-        this.dfs(i+arr[i],arr);
-    }
+export default function solve(arr, start) {
+  const steps = []
+  let n = arr.length
+  let vis = Array(n).fill(0)
+  let ans = false
 
-    canReach(arr, start) {
-        this.n=arr.length;
-        this.vis=Array(this.n).fill(0);
-        this.dfs(start,arr);
-        return this.ans;
-    }
+  function dfs(i) {
+    if (i < 0 || i >= n) return
+    if (vis[i]) return
+    vis[i] = 1
+    if (arr[i] == 0) ans = true
+    steps.push(structuredClone({ i, vis, ans }))
+    if (arr[i] == 0) return
+    dfs(i - arr[i])
+    dfs(i + arr[i])
+  }
+
+  dfs(start)
+  return { answer: ans, steps }
 }

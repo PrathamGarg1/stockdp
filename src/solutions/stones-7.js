@@ -1,31 +1,27 @@
-class Solution {
+import { grid } from "./grid.js"
 
-    dp;
-    arr;
-    pre;
+export default function solve(arr) {
+  const steps = []
+  let n = arr.length
+  let dp = grid([n, n, 2], -1)
+  let pre = Array(n).fill(arr[0])
+  for (let i = 1; i < n; i++) pre[i] = pre[i - 1] + arr[i]
 
-    val(idx,l,r){
-        return this.pre[r]-(l>0 ? this.pre[l-1] : 0)-this.arr[idx];
-    }
+  // sum of arr[l..r] without the stone at idx
+  function val(idx, l, r) {
+    return pre[r] - (l > 0 ? pre[l - 1] : 0) - arr[idx]
+  }
 
+  function rec(l, r, turn) {
+    if (l > r) return 0
+    if (dp[l][r][turn] != -1) return dp[l][r][turn]
+    let ans
+    if (turn == 1) ans = Math.max(val(l, l, r) + rec(l + 1, r, +!turn), val(r, l, r) + rec(l, r - 1, +!turn))
+    else ans = Math.min(rec(l + 1, r, +!turn) - val(l, l, r), rec(l, r - 1, +!turn) - val(r, l, r))
+    dp[l][r][turn] = ans
+    steps.push(structuredClone({ l, r, turn, ans, dp }))
+    return ans
+  }
 
-    rec(l,r,turn){
-        if(l>r) return 0;
-        if(this.dp[l][r][turn]!=-1) return this.dp[l][r][turn];
-        if(turn==1){
-            return this.dp[l][r][turn] = Math.max(this.val(l,l,r) + this.rec(l+1,r,+!turn),this.val(r,l,r)+this.rec(l,r-1,+!turn));
-        }
-        return this.dp[l][r][turn] = Math.min(this.rec(l+1,r,+!turn)-this.val(l,l,r),this.rec(l,r-1,+!turn)-this.val(r,l,r));
-    }
-
-
-    stoneGameVII(ar) {
-        this.arr=ar;
-        let n=this.arr.length;
-        this.dp=grid([n,n,2],-1);
-        this.pre=Array(n).fill(this.arr[0]);
-        for(let i=1;i<n;i++) this.pre[i]=this.pre[i-1]+this.arr[i];
-
-        return this.rec(0,n-1,1);
-    }
+  return { answer: rec(0, n - 1, 1), steps }
 }

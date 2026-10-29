@@ -1,8 +1,25 @@
 import { useState } from "react"
-import { checkInput } from "../trace"
+
+const MAX_LEN = 15 // longest list / string the page accepts
+const MAX_ABS = 1000 // biggest number the page accepts
+
+// A typed input must have the same shape as the problem's example: list, string or number.
+function checkInput(values, example) {
+  for (let k = 0; k < example.length; k++) {
+    const v = values[k]
+    const want = example[k]
+    if (typeof want === "string") {
+      if (typeof v !== "string" || v.length > MAX_LEN) return `argument ${k + 1}: a string of at most ${MAX_LEN} characters`
+    } else if (Array.isArray(want)) {
+      const ok = Array.isArray(v) && v.length >= 1 && v.length <= MAX_LEN && v.every((x) => Number.isInteger(x) && Math.abs(x) <= MAX_ABS)
+      if (!ok) return `argument ${k + 1}: a list of 1 to ${MAX_LEN} integers, each between -${MAX_ABS} and ${MAX_ABS}`
+    } else if (!Number.isInteger(v) || Math.abs(v) > MAX_ABS) return `argument ${k + 1}: an integer between -${MAX_ABS} and ${MAX_ABS}`
+  }
+  return ""
+}
 
 // One box per parameter of the solution, filled with the default example. Edit, press Run.
-export function InputForm({ params, example, onRun, result, error, truncated }) {
+export function InputForm({ params, example, onRun, result, error }) {
   const start = example.map((x) => JSON.stringify(x))
   const [texts, setTexts] = useState(start)
   const [complaint, setComplaint] = useState("")
@@ -42,7 +59,6 @@ export function InputForm({ params, example, onRun, result, error, truncated }) 
       </div>
       {complaint && <p className="mt-2 text-xs text-red-600">{complaint}</p>}
       {error && <p className="mt-2 text-xs text-red-600">The solution crashed on this input: {error}</p>}
-      {truncated && <p className="mt-2 text-xs text-amber-700">Stopped after 2000 steps. Try a shorter input.</p>}
     </form>
   )
 }

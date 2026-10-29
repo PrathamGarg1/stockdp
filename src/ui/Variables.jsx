@@ -3,7 +3,7 @@ import { cn } from "./patterns"
 const isScalar = (v) => typeof v !== "object"
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
-// Draws any value the debugger gave us. `prev` is the same value one step ago (changed cells light up).
+// Draws any value a step holds. `prev` is the same value one step ago (changed cells light up).
 // number -> cell · [numbers] -> row · [[numbers]] -> grid · {first, second} -> pair · deeper -> stacked
 function Cell({ v, changed, label }) {
   return (
@@ -66,28 +66,16 @@ function Named({ name, v, prev }) {
   )
 }
 
-// The variables panel: locals (scalars first), then class members as this->name.
-export function Variables({ frame, before }) {
-  const prev = before && before.fn === frame.fn && before.depth === frame.depth ? before.vars : {}
-  const vars = Object.entries(frame.vars)
+// The variables of one step: numbers first, then arrays and tables. `prev` is the step before (changes light up).
+export function Variables({ vars, prev = {} }) {
+  const all = Object.entries(vars)
   return (
     <div className="rounded-lg border bg-white p-3">
-      <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>inside <b className="font-mono text-foreground">{frame.fn}</b></span>
-        {frame.ret !== undefined && (
-          <span className="rounded bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-800">returned {JSON.stringify(frame.ret)}</span>
-        )}
-      </div>
       <div className="flex flex-wrap gap-x-4 gap-y-2">
-        {vars.filter(([, v]) => isScalar(v)).map(([name, v]) => <Named key={name} name={name} v={v} prev={prev[name]} />)}
+        {all.filter(([, v]) => isScalar(v)).map(([name, v]) => <Named key={name} name={name} v={v} prev={prev[name]} />)}
       </div>
       <div className="mt-2 space-y-3">
-        {vars.filter(([, v]) => !isScalar(v)).map(([name, v]) => <Named key={name} name={name} v={v} prev={prev[name]} />)}
-        {Object.entries(frame.mem).map(([name, v]) => (
-          <div key={name} className="border-t pt-2">
-            <Named name={`this->${name}`} v={v} prev={before?.mem[name]} />
-          </div>
-        ))}
+        {all.filter(([, v]) => !isScalar(v)).map(([name, v]) => <Named key={name} name={name} v={v} prev={prev[name]} />)}
       </div>
     </div>
   )

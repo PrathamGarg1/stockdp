@@ -1,32 +1,25 @@
-class mdq{
-    dq=[];
-    insert(val){
-        while(this.dq.length && this.dq.at(-1) < val) this.dq.pop();
-        this.dq.push(val);
-    }
+export default function solve(arr, k) {
+  const steps = []
+  let n = arr.length
+  let dp = Array(n).fill(0)
+  let dq = [] // dp values of the last k cells, biggest first
 
-    maxv(){
-        return this.dq[0];
-    }
+  function insert(val) {
+    while (dq.length && dq.at(-1) < val) dq.pop()
+    dq.push(val)
+  }
+  function remove(val) {
+    if (dq[0] == val) dq.shift()
+  }
 
-    remove(val){
-        if(this.dq[0] == val) this.dq.shift();
-    }
-
-}
-
-class Solution {
-    maxResult(arr, k) {
-        let n=arr.length;
-        let dp=Array(n).fill(0);
-        let md = new mdq();
-        dp[0]=arr[0];
-        md.insert(dp[0]);
-        for(let i=1;i<n;i++){
-            dp[i]  = arr[i]  + md.maxv();
-            md.insert(dp[i]);
-            if(i-k>=0) md.remove(dp[i-k]);
-        }
-        return dp[n-1];
-    }
+  dp[0] = arr[0]
+  insert(dp[0])
+  steps.push(structuredClone({ i: 0, dp, dq }))
+  for (let i = 1; i < n; i++) {
+    dp[i] = arr[i] + dq[0]
+    insert(dp[i])
+    if (i - k >= 0) remove(dp[i - k])
+    steps.push(structuredClone({ i, dp, dq }))
+  }
+  return { answer: dp[n - 1], steps }
 }

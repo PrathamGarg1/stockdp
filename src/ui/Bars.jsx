@@ -2,16 +2,11 @@ import { motion } from "motion/react"
 import { cn } from "./patterns"
 
 const CHIP = ["bg-violet-500", "bg-emerald-500", "bg-rose-500", "bg-amber-500", "bg-sky-500", "bg-pink-500"]
-const POINTER = /^(i|j|k|l|r|st|ed|lo|hi|idx|start|end|mid|cur|pos)$/
+const POINTER = /^(i|j|k|l|r|lo|hi|idx|start|end|mid|cur|pos)$/
 
-// The input array as bars. Variables named like indices (i, j, l, r ...) become chips above their bar.
-export function Bars({ frames, frame }) {
-  const first = frames[0]
-  const name = first.args.find((a) => Array.isArray(first.vars[a]) && first.vars[a].every((x) => typeof x === "number"))
-  if (!name) return null
-
-  const values = first.vars[name]
-  const ptr = Object.fromEntries(Object.entries(frame.vars).filter(([n, v]) => typeof v === "number" && POINTER.test(n) && v >= 0 && v < values.length))
+// The input array as bars. Step variables named like indices (i, j, l, r ...) become chips above their bar.
+export function Bars({ values, vars }) {
+  const ptr = Object.fromEntries(Object.entries(vars).filter(([n, v]) => typeof v === "number" && POINTER.test(n) && v >= 0 && v < values.length))
   const names = Object.keys(ptr)
   const lo = Math.min(0, ...values)
   const span = Math.max(...values) - lo || 1
