@@ -97,11 +97,7 @@ export function instrument(source) {
 
 class TooLong extends Error {}
 
-const copy = (v) => {
-  if (Array.isArray(v)) return v.map(copy)
-  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, copy(x)]))
-  return v
-}
+const copy = structuredClone
 const defined = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined))
 
 const show = (r) => (Array.isArray(r) ? `[${r.join(",")}]` : String(r))
